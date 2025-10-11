@@ -1,5 +1,5 @@
-# 💫 About Me:
-Hey I'm Kimani<br>I am a software Engineer<br>I am interested in learning new technologies  and collaborating in tech
+# Vincent Macharia Kimani
+[![Typing SVG](https://readme-typing-svg.demolab.com?font=Fira+Code&weight=900&duration=4000&pause=1000&color=5F9CFA&width=510&height=100&lines=Hello%2C+This+is++Kimani;A+Software+Engineer+and+Tech+Enthusiast;Passionate+about+building+web+applications+..+++;exploring+new+technologies%2C+and+...;collaborating+on++projects.+++)](https://git.io/typing-svg)
 
 [![Instagram](https://img.shields.io/badge/Instagram-%23E4405F.svg?logo=Instagram&logoColor=white)](https://instagram.com/worldvince) [![LinkedIn](https://img.shields.io/badge/LinkedIn-%230077B5.svg?logo=linkedin&logoColor=white)](https://linkedin.com/in/vinnohKimani) [![Reddit](https://img.shields.io/badge/Reddit-%23FF4500.svg?logo=Reddit&logoColor=white)](https://reddit.com/user/vinnohKimani) [![email](https://img.shields.io/badge/Email-D14836?logo=gmail&logoColor=white)](mailto:vincentmachariakimani@gmail.com) 
 
