@@ -1,4 +1,7 @@
-# [Vincent Macharia Kimani](https://github.com/VinnohKimani)
+# [Vincent Macharia Kimani](https://github.com/VinnohKimani) 
+ [My Portfolio](https://vinnohkimaniporfolio.netlify.app/)
+
+
 [![Typing SVG](https://readme-typing-svg.demolab.com?font=Fira+Code&weight=900&duration=4000&pause=1000&color=5F9CFA&width=510&height=100&lines=Hello%2C+This+is++Kimani;A+Software+Engineer+and+Tech+Enthusiast;Passionate+about+building+web+applications+..+++;exploring+new+technologies%2C+and+...;collaborating+on++projects.+++)](https://git.io/typing-svg)
 
  [![LinkedIn](https://img.shields.io/badge/LinkedIn-%230077B5.svg?logo=linkedin&logoColor=white)](https://linkedin.com/in/vinnohKimani) [![Reddit](https://img.shields.io/badge/Reddit-%23FF4500.svg?logo=Reddit&logoColor=white)](https://www.reddit.com/user/Defiant_North6012/) [![email](https://img.shields.io/badge/Email-D14836?logo=gmail&logoColor=white)](mailto:vincentmachariakimani@gmail.com) 
