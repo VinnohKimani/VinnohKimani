@@ -40,7 +40,7 @@ jobs:
 
       - name: Generate Activity Line Graph
         if: steps.determine-mode.outputs.mode == 'graph'
-        uses: Ashutosh00710/github-readme-activity-graph@v2.6.0
+        uses: Ashutosh00710/github-readme-activity-graph@main
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
           target_branch: main
