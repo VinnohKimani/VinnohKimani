@@ -18,7 +18,7 @@
 ## 📈 Contribution Graph
 
 <div align="center">
-  <img alt="GitHub Contribution Graph" src="dist/contribution-graph.svg" />
+  <img alt="GitHub Contribution Graph" src="dist/contribution-graph.webp" />
 </div>
 
 
