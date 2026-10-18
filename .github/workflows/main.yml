@@ -25,7 +25,7 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      # Pick the mode: manual choice wins, otherwise rotate every 6 hours
+      # Pick mode: manual choice wins, otherwise rotate every 6 hours
       - name: Determine MODE
         id: determine-mode
         env:
@@ -46,31 +46,32 @@ jobs:
             fi
           fi
 
-          # Space shooter outputs webp, the others output svg
-          if [ "$MODE" = "space" ]; then
-            EXT="webp"
-          else
-            EXT="svg"
-          fi
-
           echo "mode=$MODE" >> $GITHUB_OUTPUT
-          echo "ext=$EXT" >> $GITHUB_OUTPUT
 
-      # Remove any previous graph so old files in other formats don't pile up
+      # Ensure dist exists and remove old graph files before rendering
       - name: Prepare dist directory
         run: |
           mkdir -p dist
-          rm -f dist/contribution-graph.*
+          rm -f dist/contribution-graph.svg
 
-      # --- MODE: Space Shooter ---
+      # MODE: Space Shooter
       - name: Generate Space Shooter
         if: steps.determine-mode.outputs.mode == 'space'
         uses: czl9707/gh-space-shooter@v2
         with:
+          username: ${{ github.repository_owner }}
           github-token: ${{ secrets.GITHUB_TOKEN }}
-          output-path: dist/contribution-graph.webp
 
-      # --- MODE: Pacman ---
+      - name: Move Space Shooter output
+        if: steps.determine-mode.outputs.mode == 'space'
+        run: |
+          if [ -f "dist/github-contribution-grid-space-shooter.svg" ]; then
+            mv dist/github-contribution-grid-space-shooter.svg dist/contribution-graph.svg
+          elif [ -f "dist/github-contribution-grid-space-shooter-dark.svg" ]; then
+            mv dist/github-contribution-grid-space-shooter-dark.svg dist/contribution-graph.svg
+          fi
+
+      # MODE: Pacman 
       - name: Generate Pacman
         if: steps.determine-mode.outputs.mode == 'pacman'
         uses: abozanona/pacman-contribution-graph@main
@@ -83,10 +84,13 @@ jobs:
       - name: Move Pacman output to dist/contribution-graph.svg
         if: steps.determine-mode.outputs.mode == 'pacman'
         run: |
-          ls -la dist
-          mv dist/pacman-contribution-graph-dark.svg dist/contribution-graph.svg
+          if [ -f "dist/pacman-contribution-graph-dark.svg" ]; then
+            mv dist/pacman-contribution-graph-dark.svg dist/contribution-graph.svg
+          elif [ -f "dist/pacman-contribution-graph.svg" ]; then
+            mv dist/pacman-contribution-graph.svg dist/contribution-graph.svg
+          fi
 
-      # --- MODE: Snake ---
+      # MODE: Snake
       - name: Generate Snake
         if: steps.determine-mode.outputs.mode == 'snake'
         uses: Platane/snk@v3
@@ -96,21 +100,17 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-      # Fail early if the output is missing or suspiciously small
+      # Verify output exists and is non-empty
       - name: Verify output
         run: |
-          FILE="dist/contribution-graph.${{ steps.determine-mode.outputs.ext }}"
+          FILE="dist/contribution-graph.svg"
           ls -la dist
           if [ ! -s "$FILE" ] || [ $(stat -c%s "$FILE") -lt 1000 ]; then
             echo "Output file missing or too small: $FILE"
             exit 1
           fi
 
-      # Point the README image at the file that was just generated
-      - name: Update README image path
-        run: |
-          sed -i -E 's#dist/contribution-graph\.[a-z]+#dist/contribution-graph.${{ steps.determine-mode.outputs.ext }}#g' README.md
-
+      # Stage and commit generated visual
       - name: Commit and push generated graph
         uses: stefanzweifel/git-auto-commit-action@v5
         with:
