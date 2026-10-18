@@ -38,30 +38,27 @@ jobs:
       - name: Create dist directory
         run: mkdir -p dist
 
-      # - name: Generate Activity Line Graph
-      #   if: steps.determine-mode.outputs.mode == 'graph'
-      #   uses: Ashutosh00710/github-readme-activity-graph@main
-      #   with:
-      #     token: ${{ secrets.GITHUB_TOKEN }}
-      #     target_branch: main
-      #     output_filepath: dist/contribution-graph.svg
-      #     theme: react-dark
-      #     area: true
-      #     hide_border: true
-
-      # Mode 0: Activity Line Graph
-     
-      - name: Fetch Activity Line Graph
+     # Mode 0: GitHub Stats & Commit Activity Graph
+      - name: Fetch GitHub Stats Graph
         if: steps.determine-mode.outputs.mode == 'graph'
         run: |
           curl -fsSL -A "Mozilla/5.0" \
-            "https://github-readme-activity-graph.vercel.app/graph?username=${{ github.repository_owner }}&theme=react-dark&area=true&hide_border=true" \
+            "https://github-readme-stats.vercel.app/api?username=${{ github.repository_owner }}&show_icons=true&theme=react&hide_border=true" \
             -o dist/contribution-graph.svg
-          # Fail if it's not a real SVG
-          if ! grep -q "<svg" dist/contribution-graph.svg || [ $(stat -c%s dist/contribution-graph.svg) -lt 1000 ]; then
-            echo "Downloaded file is not a valid SVG:"; cat dist/contribution-graph.svg
-            exit 1
-          fi
+
+      # Mode 0: Activity Line Graph
+     
+      # - name: Fetch Activity Line Graph
+      #   if: steps.determine-mode.outputs.mode == 'graph'
+      #   run: |
+      #     curl -fsSL -A "Mozilla/5.0" \
+      #       "https://github-readme-activity-graph.vercel.app/graph?username=${{ github.repository_owner }}&theme=react-dark&area=true&hide_border=true" \
+      #       -o dist/contribution-graph.svg
+      #     # Fail if it's not a real SVG
+      #     if ! grep -q "<svg" dist/contribution-graph.svg || [ $(stat -c%s dist/contribution-graph.svg) -lt 1000 ]; then
+      #       echo "Downloaded file is not a valid SVG:"; cat dist/contribution-graph.svg
+      #       exit 1
+      #     fi
 
       - name: Generate Pacman
         if: steps.determine-mode.outputs.mode == 'pacman'
