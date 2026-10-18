@@ -12,19 +12,13 @@ jobs:
       contents: write
 
     steps:
-      #  Clone repository files into the virtual runner environment
       - name: Checkout repository
         uses: actions/checkout@v3
 
-      # SCalculate the current time slot to alternate between 3 graph modes
       - name: Determine MODE
         id: determine-mode
         run: |
-          # Extract current hour in UTC (00 through 23)
           HOUR=$(date +%H)
-          
-          # Divide current hour by 6 to get the 6-hour interval index (0, 1, 2, or 3)
-          # '10#' forces base-10 arithmetic so leading zeros (e.g., '08') do not break bash
           INDEX=$(( 10#$HOUR / 6 ))
           MOD=$(( INDEX % 3 ))
           if [ $MOD -eq 0 ]; then
@@ -34,28 +28,21 @@ jobs:
           else
             echo "mode=snake" >> $GITHUB_OUTPUT
           fi
-          
-          
+
       - name: Create dist directory
         run: mkdir -p dist
 
+      # --- MODE 0: Space Shooter ---
       - name: Generate Space Shooter Graph
         if: steps.determine-mode.outputs.mode == 'space'
         uses: czl9707/gh-space-shooter@main
         with:
-          github_user_name: ${{ github.repository_owner }}
+          username: ${{ github.repository_owner }}
+          output-path: dist/contribution-graph.svg
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-        # Ensure Space Shooter output aligns with dist/contribution-graph.svg
-      - name: Move Space Shooter file
-        if: steps.determine-mode.outputs.mode == 'space'
-        run: |
-          if [ -f "dist/github-contribution-grid-space-shooter.svg" ]; then
-            mv dist/github-contribution-grid-space-shooter.svg dist/contribution-graph.svg
-          fi
-
-
+      # --- MODE 1: Pacman ---
       - name: Generate Pacman
         if: steps.determine-mode.outputs.mode == 'pacman'
         uses: abozanona/pacman-contribution-graph@main
@@ -63,14 +50,14 @@ jobs:
           github_user_name: ${{ github.repository_owner }}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          NODE_OPTIONS: "--max_old_space_size=8192" # Provides extra RAM allocation for rendering
+          NODE_OPTIONS: "--max_old_space_size=8192"
 
-      # Move Pacman dark output to dist
       - name: Move Pacman output to dist/contribution-graph.svg
         if: steps.determine-mode.outputs.mode == 'pacman'
         run: |
           mv dist/pacman-contribution-graph-dark.svg dist/contribution-graph.svg
 
+      # --- MODE 2: Snake ---
       - name: Generate Snake
         if: steps.determine-mode.outputs.mode == 'snake'
         uses: Platane/snk@v3
@@ -80,9 +67,8 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
+      # --- COMMIT & PUSH ---
       - name: Commit and push generated graph
         uses: stefanzweifel/git-auto-commit-action@v5
         with:
           commit_message: "chore: update contribution graph [${{ steps.determine-mode.outputs.mode }}]"
-
-          
