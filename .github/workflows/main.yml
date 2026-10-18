@@ -1,20 +1,16 @@
 name: Generate Profile Visuals
-
 on:
   schedule:
     - cron: "0 */6 * * *"
   workflow_dispatch:
-
 jobs:
   build:
     runs-on: ubuntu-latest
     permissions:
       contents: write
-
     steps:
       - name: Checkout repository
         uses: actions/checkout@v3
-
       - name: Determine MODE
         id: determine-mode
         run: |
@@ -28,22 +24,13 @@ jobs:
           else
             echo "mode=snake" >> $GITHUB_OUTPUT
           fi
-
       - name: Create dist directory
         run: mkdir -p dist
-
-      # Mode 0: Activity Line Graph (Using Official Action)
-      - name: Generate Activity Line Graph
+      # Mode 0: Activity Line Graph
+      - name: Fetch Activity Line Graph
         if: steps.determine-mode.outputs.mode == 'graph'
-        uses: Ashutosh00710/github-readme-activity-graph@v2.6.0
-        with:
-          token: ${{ secrets.GITHUB_TOKEN }}
-          target_branch: main
-          output_filepath: dist/contribution-graph.svg
-          theme: react-dark
-          area: true
-          hide_border: true
-
+        run: |
+          curl -s "https://github-readme-activity-graph.vercel.app/graph?username=${{ github.repository_owner }}&theme=react-dark&area=true&hide_border=true" -o dist/contribution-graph.svg
       # Mode 1: Pacman
       - name: Generate Pacman
         if: steps.determine-mode.outputs.mode == 'pacman'
@@ -53,12 +40,10 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           NODE_OPTIONS: "--max_old_space_size=8192"
-
       - name: Move Pacman output to dist/contribution-graph.svg
         if: steps.determine-mode.outputs.mode == 'pacman'
         run: |
           mv dist/pacman-contribution-graph-dark.svg dist/contribution-graph.svg
-
       # Mode 2: Snake
       - name: Generate Snake
         if: steps.determine-mode.outputs.mode == 'snake'
@@ -68,7 +53,6 @@ jobs:
           outputs: dist/contribution-graph.svg?palette=github-dark
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
       # Commit and Push
       - name: Commit and push generated graph
         uses: stefanzweifel/git-auto-commit-action@v5
