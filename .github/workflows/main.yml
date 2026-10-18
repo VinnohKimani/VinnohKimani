@@ -37,7 +37,7 @@ jobs:
       - name: Fetch Activity Line Graph
         if: steps.determine-mode.outputs.mode == 'graph'
         run: |
-          curl -s "https://github-readme-activity-graph.vercel.app/graph?username=${{ github.repository_owner }}&theme=react-dark&area=true&hide_border=true" -o dist/contribution-graph.svg
+          curl -sL "https://github-readme-activity-graph.vercel.app/graph?username=${{ github.repository_owner }}&theme=react-dark&area=true&hide_border=true" -o dist/contribution-graph.svg
 
       # Mode 1: Pacman
       - name: Generate Pacman
