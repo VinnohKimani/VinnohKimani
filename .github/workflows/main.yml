@@ -38,16 +38,22 @@ jobs:
       - name: Create dist directory
         run: mkdir -p dist
 
-      - name: Generate Activity Line Graph
+      # - name: Generate Activity Line Graph
+      #   if: steps.determine-mode.outputs.mode == 'graph'
+      #   uses: Ashutosh00710/github-readme-activity-graph@main
+      #   with:
+      #     token: ${{ secrets.GITHUB_TOKEN }}
+      #     target_branch: main
+      #     output_filepath: dist/contribution-graph.svg
+      #     theme: react-dark
+      #     area: true
+      #     hide_border: true
+
+      # Mode 0: Activity Line Graph
+      - name: Fetch Activity Line Graph
         if: steps.determine-mode.outputs.mode == 'graph'
-        uses: Ashutosh00710/github-readme-activity-graph@main
-        with:
-          token: ${{ secrets.GITHUB_TOKEN }}
-          target_branch: main
-          output_filepath: dist/contribution-graph.svg
-          theme: react-dark
-          area: true
-          hide_border: true
+        run: |
+          curl -sSL -A "Mozilla/5.0" "https://github-readme-activity-graph.vercel.app/graph?username=${{ github.repository_owner }}&theme=react-dark&area=true&hide_border=true" -o dist/contribution-graph.svg
 
       - name: Generate Pacman
         if: steps.determine-mode.outputs.mode == 'pacman'
