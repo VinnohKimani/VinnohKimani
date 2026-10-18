@@ -18,7 +18,7 @@
 ## 📈 Contribution Graph
 
 <div align="center">
-  <img src="https://github.pumbas.net/api/contributions/vinnohKimani?bgColour=070A10&borderRadius=10.0" alt="GitHub Contributions Graph" />
+  <img alt="GitHub Contribution Graph" src="dist/contribution-graph.svg" />
 </div>
 
 
