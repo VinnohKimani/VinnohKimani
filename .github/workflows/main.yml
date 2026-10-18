@@ -28,7 +28,7 @@ jobs:
           INDEX=$(( 10#$HOUR / 6 ))
           MOD=$(( INDEX % 3 ))
           if [ $MOD -eq 0 ]; then
-            echo "mode=graph" >> $GITHUB_OUTPUT
+            echo "mode=space" >> $GITHUB_OUTPUT
           elif [ $MOD -eq 1 ]; then
             echo "mode=pacman" >> $GITHUB_OUTPUT
           else
