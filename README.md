@@ -6,7 +6,7 @@
 ![JavaScript](https://img.shields.io/badge/javascript-%23323330.svg?style=plastic&logo=javascript&logoColor=%23F7DF1E)  ![React](https://img.shields.io/badge/react-%2320232a.svg?style=plastic&logo=react&logoColor=%2361DAFB)  ![TypeScript](https://img.shields.io/badge/typescript-%23007ACC.svg?style=plastic&logo=typescript&logoColor=white)  ![TailwindCSS](https://img.shields.io/badge/tailwindcss-%2338B2AC.svg?style=plastic&logo=tailwind-css&logoColor=white) <br> 
 
 ```ts
-interface DeveloperProfile {
+interface Kimani {
   stack: ["Nextjs", "TypeScript", "React", "Python"];
   Interest: ["System Design", "Cloud Architecture", "Scalable Software"];
   Learning: ["System Design"];
