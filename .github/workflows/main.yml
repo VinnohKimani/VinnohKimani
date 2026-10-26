@@ -52,7 +52,7 @@ jobs:
       - name: Prepare dist directory
         run: |
           mkdir -p dist
-          rm -f dist/contribution-graph.svg
+          rm -f dist/contribution-graph.svg dist/pacman-contribution-graph.svg dist/pacman-contribution-graph-dark.svg dist/github-contribution-grid-space-shooter.svg dist/github-contribution-grid-space-shooter-dark.svg dist/gh-space-shooter.gif
 
       # MODE: Space Shooter
       - name: Generate Space Shooter
@@ -107,6 +107,8 @@ jobs:
           ls -la dist
           if [ ! -s "$FILE" ] || [ $(stat -c%s "$FILE") -lt 1000 ]; then
             echo "Output file missing or too small: $FILE"
+            echo "Available files in dist:"
+            ls -la dist || true
             exit 1
           fi
 
