@@ -66,9 +66,11 @@ jobs:
         if: steps.determine-mode.outputs.mode == 'space'
         run: |
           if [ -f "dist/github-contribution-grid-space-shooter.svg" ]; then
-            mv dist/github-contribution-grid-space-shooter.svg dist/gh-space-shooter.gif
+            cp dist/github-contribution-grid-space-shooter.svg dist/gh-space-shooter.gif
+            cp dist/github-contribution-grid-space-shooter.svg dist/contribution-graph.svg
           elif [ -f "dist/github-contribution-grid-space-shooter-dark.svg" ]; then
-            mv dist/github-contribution-grid-space-shooter-dark.svg dist/gh-space-shooter.gif
+            cp dist/github-contribution-grid-space-shooter-dark.svg dist/gh-space-shooter.gif
+            cp dist/github-contribution-grid-space-shooter-dark.svg dist/contribution-graph.svg
           fi
 
       # MODE: Pacman 
