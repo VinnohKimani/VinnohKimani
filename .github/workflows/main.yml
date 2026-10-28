@@ -48,11 +48,11 @@ jobs:
 
           echo "mode=$MODE" >> $GITHUB_OUTPUT
 
-      # Ensure dist exists and remove old graph files before rendering
-      - name: Prepare dist directory
+      # Ensure dist/graphs exists and remove old graph files before rendering
+      - name: Prepare dist directories
         run: |
-          mkdir -p dist
-          rm -f dist/contribution-graph.svg dist/pacman-contribution-graph.svg dist/pacman-contribution-graph-dark.svg dist/github-contribution-grid-space-shooter.svg dist/github-contribution-grid-space-shooter-dark.svg dist/gh-space-shooter.gif dist/github-contribution-grid-snake.svg dist/github-contribution-grid-snake-dark.svg
+          mkdir -p dist/graphs
+          rm -f dist/graphs/* dist/contribution-graph.svg dist/pacman-contribution-graph.svg dist/pacman-contribution-graph-dark.svg dist/github-contribution-grid-space-shooter.svg dist/github-contribution-grid-space-shooter-dark.svg dist/gh-space-shooter.gif dist/github-contribution-grid-snake.svg dist/github-contribution-grid-snake-dark.svg 2>/dev/null || true
 
       # MODE: Space Shooter
       - name: Generate Space Shooter
@@ -65,10 +65,15 @@ jobs:
       - name: Move Space Shooter output
         if: steps.determine-mode.outputs.mode == 'space'
         run: |
+          mkdir -p dist/graphs
           if [ -f "dist/github-contribution-grid-space-shooter.svg" ]; then
-            mv dist/github-contribution-grid-space-shooter.svg dist/gh-space-shooter.gif
+            mv dist/github-contribution-grid-space-shooter.svg dist/graphs/gh-space-shooter.gif
           elif [ -f "dist/github-contribution-grid-space-shooter-dark.svg" ]; then
-            mv dist/github-contribution-grid-space-shooter-dark.svg dist/gh-space-shooter.gif
+            mv dist/github-contribution-grid-space-shooter-dark.svg dist/graphs/gh-space-shooter.gif
+          elif [ -f "github-contribution-grid-space-shooter.svg" ]; then
+            mv github-contribution-grid-space-shooter.svg dist/graphs/gh-space-shooter.gif
+          elif [ -f "github-contribution-grid-space-shooter-dark.svg" ]; then
+            mv github-contribution-grid-space-shooter-dark.svg dist/graphs/gh-space-shooter.gif
           fi
 
       # MODE: Pacman 
@@ -84,10 +89,15 @@ jobs:
       - name: Move Pacman output
         if: steps.determine-mode.outputs.mode == 'pacman'
         run: |
+          mkdir -p dist/graphs
           if [ -f "dist/pacman-contribution-graph-dark.svg" ]; then
-            mv dist/pacman-contribution-graph-dark.svg dist/pacman-contribution-graph.svg
+            mv dist/pacman-contribution-graph-dark.svg dist/graphs/pacman-contribution-graph.svg
           elif [ -f "dist/pacman-contribution-graph.svg" ]; then
-            mv dist/pacman-contribution-graph.svg dist/pacman-contribution-graph.svg || true
+            mv dist/pacman-contribution-graph.svg dist/graphs/pacman-contribution-graph.svg
+          elif [ -f "pacman-contribution-graph-dark.svg" ]; then
+            mv pacman-contribution-graph-dark.svg dist/graphs/pacman-contribution-graph.svg
+          elif [ -f "pacman-contribution-graph.svg" ]; then
+            mv pacman-contribution-graph.svg dist/graphs/pacman-contribution-graph.svg
           fi
 
       # MODE: Snake
@@ -96,20 +106,32 @@ jobs:
         uses: Platane/snk@v3
         with:
           github_user_name: ${{ github.repository_owner }}
-          outputs: dist/github-contribution-grid-snake.svg?palette=github-dark
+          outputs: |
+            dist/graphs/github-contribution-grid-snake.svg?palette=github-dark
+            dist/graphs/github-contribution-grid-snake-dark.svg?palette=github-dark
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-      # Update README to reference correct image
+      - name: Normalize Snake output
+        if: steps.determine-mode.outputs.mode == 'snake'
+        run: |
+          mkdir -p dist/graphs
+          if [ -f "dist/graphs/github-contribution-grid-snake-dark.svg" ] && [ ! -s "dist/graphs/github-contribution-grid-snake.svg" ]; then
+            cp dist/graphs/github-contribution-grid-snake-dark.svg dist/graphs/github-contribution-grid-snake.svg
+          elif [ -f "dist/graphs/github-contribution-grid-snake.svg" ] && [ ! -s "dist/graphs/github-contribution-grid-snake.svg" ] && [ -f "dist/graphs/github-contribution-grid-snake-dark.svg" ]; then
+            cp dist/graphs/github-contribution-grid-snake-dark.svg dist/graphs/github-contribution-grid-snake.svg
+          fi
+
+      # Update README to reference correct image in dist/graphs
       - name: Update README for current mode
         run: |
           MODE="${{ steps.determine-mode.outputs.mode }}"
           if [ "$MODE" = "space" ]; then
-            IMG="dist/gh-space-shooter.gif"
+            IMG="dist/graphs/gh-space-shooter.gif"
           elif [ "$MODE" = "pacman" ]; then
-            IMG="dist/pacman-contribution-graph.svg"
+            IMG="dist/graphs/pacman-contribution-graph.svg"
           else
-            IMG="dist/github-contribution-grid-snake.svg"
+            IMG="dist/graphs/github-contribution-grid-snake.svg"
           fi
           sed -i -E "s|(<img[^>]+src=\")[^\"]+(\")|\\1${IMG//\//\\/}\\2|" README.md
           grep -n 'src=' README.md | head -1
@@ -119,17 +141,17 @@ jobs:
         run: |
           MODE="${{ steps.determine-mode.outputs.mode }}"
           if [ "$MODE" = "space" ]; then
-            FILE="dist/gh-space-shooter.gif"
+            FILE="dist/graphs/gh-space-shooter.gif"
           elif [ "$MODE" = "pacman" ]; then
-            FILE="dist/pacman-contribution-graph.svg"
+            FILE="dist/graphs/pacman-contribution-graph.svg"
           else
-            FILE="dist/github-contribution-grid-snake.svg"
+            FILE="dist/graphs/github-contribution-grid-snake.svg"
           fi
-          ls -la dist
+          ls -la dist/graphs
           if [ ! -s "$FILE" ] || [ $(stat -c%s "$FILE") -lt 1000 ]; then
             echo "Output file missing or too small: $FILE"
-            echo "Available files in dist:"
-            ls -la dist || true
+            echo "Available files in dist/graphs:"
+            ls -la dist/graphs || true
             exit 1
           fi
 
