@@ -48,11 +48,8 @@ jobs:
 
           echo "mode=$MODE" >> $GITHUB_OUTPUT
 
-      # Ensure dist/graphs exists and remove old graph files before rendering
-      - name: Prepare dist directories
-        run: |
-          mkdir -p dist/graphs
-          rm -f dist/graphs/* dist/contribution-graph.svg dist/pacman-contribution-graph.svg dist/pacman-contribution-graph-dark.svg dist/github-contribution-grid-space-shooter.svg dist/github-contribution-grid-space-shooter-dark.svg dist/gh-space-shooter.gif dist/github-contribution-grid-snake.svg dist/github-contribution-grid-snake-dark.svg 2>/dev/null || true
+      - name: Prepare dist
+        run: mkdir -p dist/graphs
 
       # MODE: Space Shooter
       - name: Generate Space Shooter
@@ -62,7 +59,7 @@ jobs:
           username: ${{ github.repository_owner }}
           github-token: ${{ secrets.GITHUB_TOKEN }}
 
-      # MODE: Pacman 
+      # MODE: Pacman
       - name: Generate Pacman
         if: steps.determine-mode.outputs.mode == 'pacman'
         uses: abozanona/pacman-contribution-graph@main
@@ -78,79 +75,42 @@ jobs:
         uses: Platane/snk@v3
         with:
           github_user_name: ${{ github.repository_owner }}
-          outputs: |
-            dist/github-contribution-grid-snake.svg?palette=github-dark
-            github-contribution-grid-snake.svg?palette=github-dark
+          outputs: dist/github-contribution-grid-snake.svg?palette=github-dark
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-      # Collect outputs for current mode
       - name: Collect outputs
         run: |
           mkdir -p dist/graphs
           MODE="${{ steps.determine-mode.outputs.mode }}"
-          echo "=== Searching for generated files ==="
-          find . -type f \( -name '*space*shooter*' -o -name '*pacman*contribution*' -o -name '*snake*contribution*' -o -name 'github-contribution-grid-*' \) 2>/dev/null | grep -v node_modules | head -30
           if [ "$MODE" = "space" ]; then
-            F=$(find . -type f \( -name 'github-contribution-grid-space-shooter*' -o -name '*space*shooter*' \) 2>/dev/null | grep -v node_modules | head -1)
-            if [ -n "$F" ]; then
-              cp "$F" dist/graphs/gh-space-shooter.gif
-            fi
+            F=$(find . -type f \( -name 'github-contribution-grid-space-shooter*' -o -path '*space*shooter*' \) ! -path '*/node_modules/*' | head -1)
+            [ -n "$F" ] && cp "$F" dist/graphs/gh-space-shooter.gif
           elif [ "$MODE" = "pacman" ]; then
-            F=$(find . -type f -name '*pacman*contribution*' 2>/dev/null | grep -v node_modules | head -1)
-            if [ -n "$F" ]; then
-              cp "$F" dist/graphs/pacman-contribution-graph.svg
-            fi
-          elif [ "$MODE" = "snake" ]; then
-            F=$(find . -type f -name '*snake*contribution*' 2>/dev/null | grep -v node_modules | head -1)
-            if [ -n "$F" ]; then
-              cp "$F" dist/graphs/github-contribution-grid-snake.svg
-            else
-              F2=$(find . -type f -name 'github-contribution-grid-snake*' 2>/dev/null | grep -v node_modules | head -1)
-              if [ -n "$F2" ]; then
-                cp "$F2" dist/graphs/github-contribution-grid-snake.svg
-              fi
-            fi
+            F=$(find . -type f -name '*pacman*contribution*' ! -path '*/node_modules/*' | head -1)
+            [ -n "$F" ] && cp "$F" dist/graphs/pacman-contribution-graph.svg
+          else
+            F=$(find . -type f -name '*github-contribution-grid-snake*' ! -path '*/node_modules/*' | head -1)
+            [ -n "$F" ] && cp "$F" dist/graphs/github-contribution-grid-snake.svg
           fi
-          echo "=== dist/graphs ==="
-          ls -la dist/graphs 2>/dev/null || true
 
-      # Update README to reference correct image in dist/graphs
-      - name: Update README for current mode
+      - name: Update README
         run: |
           MODE="${{ steps.determine-mode.outputs.mode }}"
-          if [ "$MODE" = "space" ]; then
-            IMG="dist/graphs/gh-space-shooter.gif"
-          elif [ "$MODE" = "pacman" ]; then
-            IMG="dist/graphs/pacman-contribution-graph.svg"
-          else
-            IMG="dist/graphs/github-contribution-grid-snake.svg"
-          fi
+          if [ "$MODE" = "space" ]; then IMG="dist/graphs/gh-space-shooter.gif"
+          elif [ "$MODE" = "pacman" ]; then IMG="dist/graphs/pacman-contribution-graph.svg"
+          else IMG="dist/graphs/github-contribution-grid-snake.svg"; fi
           sed -i -E "s|(<img[^>]+src=\")[^\"]+(\")|\\1${IMG//\//\\/}\\2|" README.md
-          grep -n 'src=' README.md | head -1
 
-      # Verify output exists and is non-empty
       - name: Verify output
         run: |
           MODE="${{ steps.determine-mode.outputs.mode }}"
-          if [ "$MODE" = "space" ]; then
-            FILE="dist/graphs/gh-space-shooter.gif"
-          elif [ "$MODE" = "pacman" ]; then
-            FILE="dist/graphs/pacman-contribution-graph.svg"
-          else
-            FILE="dist/graphs/github-contribution-grid-snake.svg"
-          fi
-          echo "=== Final check ==="
-          ls -la dist/graphs 2>/dev/null || true
-          find . -name 'gh-space-shooter*' -o -name 'pacman-contribution-graph*' -o -name 'github-contribution-grid-snake*' 2>/dev/null | grep -v node_modules | head -15
-          if [ ! -s "$FILE" ] || [ $(stat -c%s "$FILE") -lt 1000 ]; then
-            echo "Output file missing or too small: $FILE"
-            echo "Available files in dist/graphs:"
-            ls -la dist/graphs || true
-            exit 1
-          fi
+          if [ "$MODE" = "space" ]; then FILE="dist/graphs/gh-space-shooter.gif"
+          elif [ "$MODE" = "pacman" ]; then FILE="dist/graphs/pacman-contribution-graph.svg"
+          else FILE="dist/graphs/github-contribution-grid-snake.svg"; fi
+          ls -la dist/graphs
+          [ -s "$FILE" ] && [ $(stat -c%s "$FILE") -ge 1000 ] || { echo "Missing/too small: $FILE"; exit 1; }
 
-      # Stage and commit generated visual
       - name: Commit and push generated graph
         uses: stefanzweifel/git-auto-commit-action@v5
         with:
