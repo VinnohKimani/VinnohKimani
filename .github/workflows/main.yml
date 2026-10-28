@@ -62,20 +62,6 @@ jobs:
           username: ${{ github.repository_owner }}
           github-token: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Move Space Shooter output
-        if: steps.determine-mode.outputs.mode == 'space'
-        run: |
-          mkdir -p dist/graphs
-          if [ -f "dist/github-contribution-grid-space-shooter.svg" ]; then
-            mv dist/github-contribution-grid-space-shooter.svg dist/graphs/gh-space-shooter.gif
-          elif [ -f "dist/github-contribution-grid-space-shooter-dark.svg" ]; then
-            mv dist/github-contribution-grid-space-shooter-dark.svg dist/graphs/gh-space-shooter.gif
-          elif [ -f "github-contribution-grid-space-shooter.svg" ]; then
-            mv github-contribution-grid-space-shooter.svg dist/graphs/gh-space-shooter.gif
-          elif [ -f "github-contribution-grid-space-shooter-dark.svg" ]; then
-            mv github-contribution-grid-space-shooter-dark.svg dist/graphs/gh-space-shooter.gif
-          fi
-
       # MODE: Pacman 
       - name: Generate Pacman
         if: steps.determine-mode.outputs.mode == 'pacman'
@@ -86,20 +72,6 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           NODE_OPTIONS: "--max_old_space_size=8192"
 
-      - name: Move Pacman output
-        if: steps.determine-mode.outputs.mode == 'pacman'
-        run: |
-          mkdir -p dist/graphs
-          if [ -f "dist/pacman-contribution-graph-dark.svg" ]; then
-            mv dist/pacman-contribution-graph-dark.svg dist/graphs/pacman-contribution-graph.svg
-          elif [ -f "dist/pacman-contribution-graph.svg" ]; then
-            mv dist/pacman-contribution-graph.svg dist/graphs/pacman-contribution-graph.svg
-          elif [ -f "pacman-contribution-graph-dark.svg" ]; then
-            mv pacman-contribution-graph-dark.svg dist/graphs/pacman-contribution-graph.svg
-          elif [ -f "pacman-contribution-graph.svg" ]; then
-            mv pacman-contribution-graph.svg dist/graphs/pacman-contribution-graph.svg
-          fi
-
       # MODE: Snake
       - name: Generate Snake
         if: steps.determine-mode.outputs.mode == 'snake'
@@ -107,20 +79,41 @@ jobs:
         with:
           github_user_name: ${{ github.repository_owner }}
           outputs: |
-            dist/graphs/github-contribution-grid-snake.svg?palette=github-dark
-            dist/graphs/github-contribution-grid-snake-dark.svg?palette=github-dark
+            dist/github-contribution-grid-snake.svg?palette=github-dark
+            github-contribution-grid-snake.svg?palette=github-dark
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Normalize Snake output
-        if: steps.determine-mode.outputs.mode == 'snake'
+      # Collect outputs for current mode
+      - name: Collect outputs
         run: |
           mkdir -p dist/graphs
-          if [ -f "dist/graphs/github-contribution-grid-snake-dark.svg" ] && [ ! -s "dist/graphs/github-contribution-grid-snake.svg" ]; then
-            cp dist/graphs/github-contribution-grid-snake-dark.svg dist/graphs/github-contribution-grid-snake.svg
-          elif [ -f "dist/graphs/github-contribution-grid-snake.svg" ] && [ ! -s "dist/graphs/github-contribution-grid-snake.svg" ] && [ -f "dist/graphs/github-contribution-grid-snake-dark.svg" ]; then
-            cp dist/graphs/github-contribution-grid-snake-dark.svg dist/graphs/github-contribution-grid-snake.svg
+          MODE="${{ steps.determine-mode.outputs.mode }}"
+          echo "=== Searching for generated files ==="
+          find . -type f \( -name '*space*shooter*' -o -name '*pacman*contribution*' -o -name '*snake*contribution*' -o -name 'github-contribution-grid-*' \) 2>/dev/null | grep -v node_modules | head -30
+          if [ "$MODE" = "space" ]; then
+            F=$(find . -type f \( -name 'github-contribution-grid-space-shooter*' -o -name '*space*shooter*' \) 2>/dev/null | grep -v node_modules | head -1)
+            if [ -n "$F" ]; then
+              cp "$F" dist/graphs/gh-space-shooter.gif
+            fi
+          elif [ "$MODE" = "pacman" ]; then
+            F=$(find . -type f -name '*pacman*contribution*' 2>/dev/null | grep -v node_modules | head -1)
+            if [ -n "$F" ]; then
+              cp "$F" dist/graphs/pacman-contribution-graph.svg
+            fi
+          elif [ "$MODE" = "snake" ]; then
+            F=$(find . -type f -name '*snake*contribution*' 2>/dev/null | grep -v node_modules | head -1)
+            if [ -n "$F" ]; then
+              cp "$F" dist/graphs/github-contribution-grid-snake.svg
+            else
+              F2=$(find . -type f -name 'github-contribution-grid-snake*' 2>/dev/null | grep -v node_modules | head -1)
+              if [ -n "$F2" ]; then
+                cp "$F2" dist/graphs/github-contribution-grid-snake.svg
+              fi
+            fi
           fi
+          echo "=== dist/graphs ==="
+          ls -la dist/graphs 2>/dev/null || true
 
       # Update README to reference correct image in dist/graphs
       - name: Update README for current mode
@@ -147,7 +140,9 @@ jobs:
           else
             FILE="dist/graphs/github-contribution-grid-snake.svg"
           fi
-          ls -la dist/graphs
+          echo "=== Final check ==="
+          ls -la dist/graphs 2>/dev/null || true
+          find . -name 'gh-space-shooter*' -o -name 'pacman-contribution-graph*' -o -name 'github-contribution-grid-snake*' 2>/dev/null | grep -v node_modules | head -15
           if [ ! -s "$FILE" ] || [ $(stat -c%s "$FILE") -lt 1000 ]; then
             echo "Output file missing or too small: $FILE"
             echo "Available files in dist/graphs:"
