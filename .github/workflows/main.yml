@@ -66,11 +66,9 @@ jobs:
         if: steps.determine-mode.outputs.mode == 'space'
         run: |
           if [ -f "dist/github-contribution-grid-space-shooter.svg" ]; then
-            cp dist/github-contribution-grid-space-shooter.svg dist/gh-space-shooter.gif
-            cp dist/github-contribution-grid-space-shooter.svg dist/contribution-graph.svg
+            mv dist/github-contribution-grid-space-shooter.svg dist/gh-space-shooter.gif
           elif [ -f "dist/github-contribution-grid-space-shooter-dark.svg" ]; then
-            cp dist/github-contribution-grid-space-shooter-dark.svg dist/gh-space-shooter.gif
-            cp dist/github-contribution-grid-space-shooter-dark.svg dist/contribution-graph.svg
+            mv dist/github-contribution-grid-space-shooter-dark.svg dist/gh-space-shooter.gif
           fi
 
       # MODE: Pacman 
@@ -83,13 +81,13 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           NODE_OPTIONS: "--max_old_space_size=8192"
 
-      - name: Move Pacman output to dist/contribution-graph.svg
+      - name: Move Pacman output
         if: steps.determine-mode.outputs.mode == 'pacman'
         run: |
           if [ -f "dist/pacman-contribution-graph-dark.svg" ]; then
-            mv dist/pacman-contribution-graph-dark.svg dist/contribution-graph.svg
+            mv dist/pacman-contribution-graph-dark.svg dist/pacman-contribution-graph.svg
           elif [ -f "dist/pacman-contribution-graph.svg" ]; then
-            mv dist/pacman-contribution-graph.svg dist/contribution-graph.svg
+            mv dist/pacman-contribution-graph.svg dist/pacman-contribution-graph.svg
           fi
 
       # MODE: Snake
@@ -98,14 +96,34 @@ jobs:
         uses: Platane/snk@v3
         with:
           github_user_name: ${{ github.repository_owner }}
-          outputs: dist/contribution-graph.svg?palette=github-dark
+          outputs: dist/github-contribution-grid-snake.svg?palette=github-dark
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      # Update README to reference correct image
+      - name: Update README for current mode
+        run: |
+          MODE="${{ steps.determine-mode.outputs.mode }}"
+          if [ "$MODE" = "space" ]; then
+            IMG="dist/gh-space-shooter.gif"
+          elif [ "$MODE" = "pacman" ]; then
+            IMG="dist/pacman-contribution-graph.svg"
+          else
+            IMG="dist/github-contribution-grid-snake.svg"
+          fi
+          sed -i "s|src=\"[^\"]*\"|src=\"$IMG\"|" README.md
 
       # Verify output exists and is non-empty
       - name: Verify output
         run: |
-          FILE="dist/contribution-graph.svg"
+          MODE="${{ steps.determine-mode.outputs.mode }}"
+          if [ "$MODE" = "space" ]; then
+            FILE="dist/gh-space-shooter.gif"
+          elif [ "$MODE" = "pacman" ]; then
+            FILE="dist/pacman-contribution-graph.svg"
+          else
+            FILE="dist/github-contribution-grid-snake.svg"
+          fi
           ls -la dist
           if [ ! -s "$FILE" ] || [ $(stat -c%s "$FILE") -lt 1000 ]; then
             echo "Output file missing or too small: $FILE"
