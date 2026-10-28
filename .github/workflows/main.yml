@@ -83,16 +83,20 @@ jobs:
         run: |
           mkdir -p dist/graphs
           MODE="${{ steps.determine-mode.outputs.mode }}"
+          echo "--- listing ---"
+          ls -laR . 2>&1 | grep -E '(space|shooter|pacman|snake|contribution)' | head -40
           if [ "$MODE" = "space" ]; then
-            F=$(find . -type f \( -name 'github-contribution-grid-space-shooter*' -o -path '*space*shooter*' \) ! -path '*/node_modules/*' | head -1)
-            [ -n "$F" ] && cp "$F" dist/graphs/gh-space-shooter.gif
+            F=$(find . -type f \( -name '*space*shooter*' -o -name 'github-contribution-grid-space*' \) ! -path '*/node_modules/*' ! -path '*/.git/*' | head -5)
+            for f in $F; do cp "$f" dist/graphs/gh-space-shooter.gif && break; done
           elif [ "$MODE" = "pacman" ]; then
-            F=$(find . -type f -name '*pacman*contribution*' ! -path '*/node_modules/*' | head -1)
-            [ -n "$F" ] && cp "$F" dist/graphs/pacman-contribution-graph.svg
+            F=$(find . -type f \( -name '*pacman*contribution*' -o -name 'pacman-contribution*' \) ! -path '*/node_modules/*' ! -path '*/.git/*' | head -5)
+            for f in $F; do cp "$f" dist/graphs/pacman-contribution-graph.svg && break; done
           else
-            F=$(find . -type f -name '*github-contribution-grid-snake*' ! -path '*/node_modules/*' | head -1)
-            [ -n "$F" ] && cp "$F" dist/graphs/github-contribution-grid-snake.svg
+            F=$(find . -type f \( -name '*snake*contribution*' -o -name 'github-contribution-grid-snake*' \) ! -path '*/node_modules/*' ! -path '*/.git/*' | head -10)
+            for f in $F; do cp "$f" dist/graphs/github-contribution-grid-snake.svg && break; done
           fi
+          echo "--- done ---"
+          ls -la dist/graphs/ 2>&1 | head -10
 
       - name: Update README
         run: |
