@@ -24,7 +24,7 @@ interface Kimani {
 ## daily workout regime
 
 <div align="center">
-  <img alt="GitHub Contribution Graph" src="dist/graphs/gh-space-shooter.gif" />
+  <img alt="GitHub Contribution Graph" src="dist/graphs/github-contribution-grid-snake.svg" />
 </div>
 
 ## star something if it was useful
