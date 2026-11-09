@@ -27,8 +27,8 @@ interface Kimani {
   <img alt="GitHub Contribution Graph" src="dist/graphs/gh-space-shooter.gif" />
 </div>
 
+---
+
 ## star something if it was useful
 
-
----
 
